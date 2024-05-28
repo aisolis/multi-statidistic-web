@@ -10,9 +10,12 @@ import { RegisterComponent } from '../../pages/register/register.component';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { TruncateDecimalsPipe } from 'src/app/truncate-decimals.pipe';
+import { MatPaginatorModule } from '@angular/material/paginator';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatSelectModule } from '@angular/material/select';
+import { MatTableModule } from '@angular/material/table';
+import { MatSortModule } from '@angular/material/sort';
+
 @NgModule({
   imports: [
     CommonModule,
@@ -24,7 +27,11 @@ import { MatSelectModule } from '@angular/material/select';
     MatButtonModule,
     MatButtonModule,
     BrowserAnimationsModule,
-    MatSelectModule
+    MatSelectModule,
+    MatPaginatorModule,
+    MatSortModule,
+    MatTableModule,
+    MatPaginatorModule
     // NgbModule,
   ],
   declarations: [

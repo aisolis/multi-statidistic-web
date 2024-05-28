@@ -19,7 +19,10 @@ import { MatButtonModule } from '@angular/material/button';
 import { TruncateDecimalsPipe } from './truncate-decimals.pipe';
 import { IntegerOnlyPipe } from './integer-only.pipe';
 import { MatSelectModule } from '@angular/material/select';
+import { MatTableModule } from '@angular/material/table';
+import { MatSortModule } from '@angular/material/sort';
 
+import { MatPaginatorModule } from '@angular/material/paginator';
 
 @NgModule({
   imports: [
@@ -35,14 +38,18 @@ import { MatSelectModule } from '@angular/material/select';
     MatFormFieldModule,
     MatButtonModule,
     BrowserAnimationsModule,
-    MatSelectModule
+    MatSelectModule,
+    MatSortModule,
+    MatTableModule,
+    MatPaginatorModule
   ],
   declarations: [
     AppComponent,
     AdminLayoutComponent,
     AuthLayoutComponent,
     TruncateDecimalsPipe,
-    IntegerOnlyPipe
+    IntegerOnlyPipe,
+    
   ],
   providers: [],
   bootstrap: [AppComponent]

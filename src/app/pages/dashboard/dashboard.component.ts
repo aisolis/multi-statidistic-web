@@ -10,6 +10,9 @@ import {
   chartExample2
 } from "../../variables/charts";
 import { Subscription } from 'rxjs';
+import { MatPaginator } from '@angular/material/paginator';
+import { MatTableDataSource } from '@angular/material/table';
+
 
 @Component({
   selector: 'app-dashboard',
@@ -23,6 +26,9 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('hypothesisModal', { static: false }) hypothesisModal: any;
   @ViewChild('hypothesisResultModal', { static: false }) hypothesisResultModal: any;
   @ViewChild('chartProjection', { static: false }) chartProjection: ElementRef<HTMLCanvasElement>;
+  @ViewChild(MatPaginator) paginator: MatPaginator;
+
+  displayedColumns: string[] = ['mes', 'unidadesVendidas', 'ganancias', 'anioVenta'];
 
   public datasets: any;
   public data: any;
@@ -50,6 +56,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   public hypothesisChart;
   public hypothesisResult: any;
   public hypothesisImageUrl: string;
+  dataSource = new MatTableDataSource<any>(this.salesData);
 
 
   constructor(private modalService: NgbModal, private fb: FormBuilder, private ventasService: VentasService, private cdr: ChangeDetectorRef) {
@@ -91,6 +98,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit() {
+    this.dataSource.paginator = this.paginator;
     this.initializeCharts();
   }
 
@@ -471,6 +479,8 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   obtenerVentasGlobales() {
     this.ventasService.recuperarVentasGlobales().subscribe(response => {
       this.salesData = response.documentos.filter(doc => Object.keys(doc).length > 0);
+      this.dataSource.data = this.salesData;
+      this.dataSource.paginator = this.paginator;
       this.updateAvailableMonths();
       this.calculateCurrentMonthSales();
       this.calculateSalesGrowth();
