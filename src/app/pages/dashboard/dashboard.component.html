@@ -181,7 +181,7 @@
           <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
         </table>
       </div>
-      <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons></mat-paginator>
+      <mat-paginator #sales [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons></mat-paginator>
     </div>
   </div>
 </div>
@@ -207,7 +207,7 @@
   <ng-template #content let-modal>
     <div class="modal-header">
       <h4 class="modal-title">Agregar Venta</h4>
-      <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <button type="button" class="close" aria-label="Close" (click)="resetSalesForm()">
         <span aria-hidden="true">&times;</span>
       </button>
     </div>
@@ -265,7 +265,7 @@
           </mat-form-field>
         </div>
         <div class="modal-footer">
-          <button type="button" mat-button (click)="modal.dismiss('Cross click')">Cancelar</button>
+          <button type="button" mat-button (click)="resetSalesForm()">Cancelar</button>
           <button type="submit" mat-button [disabled]="!salesForm.valid">Aceptar</button>
         </div>
       </form>
@@ -297,71 +297,79 @@
     </div>
   </ng-template>
 
-
-  <!-- Projection Modal -->
-  <ng-template #projectionModal let-modal>
-    <div class="modal-header">
-      <h4 class="modal-title">Proyecciones de Ventas</h4>
-      <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
-        <span aria-hidden="true">&times;</span>
-      </button>
-    </div>
-    <div class="modal-body">
-      <form [formGroup]="projectionForm" (ngSubmit)="onProjectionSubmit()">
-        <div class="form-group">
-          <label for="intervalo">Intervalo</label>
-          <select id="intervalo" formControlName="intervalo" class="form-control">
-            <option value="años">Años</option>
-            <option value="meses">Meses</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label for="periodos">Número de Periodos</label>
-          <input type="number" id="periodos" formControlName="periodos" class="form-control" min="1">
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-light" (click)="modal.dismiss('Cross click')">Cancelar</button>
-          <button type="submit" class="btn btn-primary" [disabled]="!projectionForm.valid">Aceptar</button>
-        </div>
-      </form>
-      <div class="chart bg-gradient-default">
-        <div class="col">
-          <h6 class="text-uppercase text-light ls-1 mb-1">diagrama de ventas</h6>
-          <h2 class="text-white mb-0">Proyecciones</h2>
-        </div>
-        <canvas id="chart-projection" class="chart-canvas" #chartProjection></canvas>
+<!-- Projection Modal -->
+<ng-template #projectionModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title">Proyecciones de Ventas</h4>
+    <button type="button" class="close" aria-label="Close" (click)="resetProjectionModal()">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="projectionForm" (ngSubmit)="onProjectionSubmit()">
+      <div class="form-group">
+        <label for="intervalo">Intervalo</label>
+        <select id="intervalo" formControlName="intervalo" class="form-control">
+          <option value="años">Años</option>
+          <option value="meses">Meses</option>
+        </select>
       </div>
-      <div *ngIf="projectionResult" class="mt-5">
-        <!-- Chart -->
-        <h5>Factor de Crecimiento: {{ projectionResult.factor_crecimiento }}</h5>
-        <table class="table">
-          <thead>
-            <tr>
-              <th>Periodo</th>
-              <th>Intervalo</th>
-              <th>Unidades</th>
-              <th>Ganancias</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let pred of projectionResult.predicciones">
-              <td>{{ pred.periodo }}</td>
-              <td>{{ pred.intervalo }}</td>
-              <td>{{ pred.unidades | number:'1.0-0'}}</td>
-              <td>{{ pred.ganancias | currency:'GTQ' }}</td>
-            </tr>
-          </tbody>
+      <div class="form-group">
+        <label for="periodos">Número de Periodos</label>
+        <input type="number" id="periodos" formControlName="periodos" class="form-control" min="1">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-light" (click)="resetProjectionModal()">Cancelar</button>
+        <button type="submit" class="btn btn-primary" [disabled]="!projectionForm.valid">Aceptar</button>
+      </div>
+    </form>
+    <div class="chart bg-gradient-default">
+      <div class="col">
+        <h6 class="text-uppercase text-light ls-1 mb-1">diagrama de ventas</h6>
+        <h2 class="text-white mb-0">Proyecciones</h2>
+      </div>
+      <canvas id="chart-projection" class="chart-canvas" #chartProjection></canvas>
+    </div>
+    <div class="mt-5">
+      <h5>Factor de Crecimiento: {{ projectionResult.factor_crecimiento }} - Tipo de correlacion: {{projectionResult.fuerza_correlacion}}</h5>
+      <div class="table-responsive">
+        <table mat-table [dataSource]="projectionDataSource" class="mat-elevation-z8" style="width: 100%;">
+          <!-- Periodo Column -->
+          <ng-container matColumnDef="periodo">
+            <th mat-header-cell *matHeaderCellDef> Periodo </th>
+            <td mat-cell *matCellDef="let pred"> {{ pred.periodo }} </td>
+          </ng-container>
+          <!-- Intervalo Column -->
+          <ng-container matColumnDef="intervalo">
+            <th mat-header-cell *matHeaderCellDef> Intervalo </th>
+            <td mat-cell *matCellDef="let pred"> {{ pred.intervalo }} </td>
+          </ng-container>
+          <!-- Unidades Column -->
+          <ng-container matColumnDef="unidades">
+            <th mat-header-cell *matHeaderCellDef> Unidades </th>
+            <td mat-cell *matCellDef="let pred"> {{ pred.unidades | number:'1.0-0' }} </td>
+          </ng-container>
+          <!-- Ganancias Column -->
+          <ng-container matColumnDef="ganancias">
+            <th mat-header-cell *matHeaderCellDef> Ganancias </th>
+            <td mat-cell *matCellDef="let pred"> {{ pred.ganancias | currency:'GTQ' }} </td>
+          </ng-container>
+          <tr mat-header-row *matHeaderRowDef="displayedProjectionColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedProjectionColumns;"></tr>
         </table>
       </div>
+      <mat-paginator #projectionPaginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons></mat-paginator>
     </div>
-  </ng-template>
+  </div>
+</ng-template>
+
 
 
   <!-- Hypothesis Test Modal -->
   <ng-template #hypothesisModal let-modal>
     <div class="modal-header">
       <h4 class="modal-title">Prueba de Hipótesis</h4>
-      <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <button type="button" class="close" aria-label="Close" (click)="resetHypothesisForm()">
         <span aria-hidden="true">&times;</span>
       </button>
     </div>
@@ -445,7 +453,7 @@
           </mat-form-field>
         </div>
         <div class="modal-footer">
-          <button type="button" mat-button (click)="modal.dismiss('Cross click')">Cancelar</button>
+          <button type="button" mat-button (click)="resetHypothesisForm()">Cancelar</button>
           <button type="submit" mat-button [disabled]="!hypothesisForm.valid">Aceptar</button>
         </div>
       </form>
@@ -456,7 +464,7 @@
 <ng-template #hypothesisResultModal let-modal>
   <div class="modal-header">
     <h4 class="modal-title">Resultado de la Prueba de Hipótesis</h4>
-    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+    <button type="button" class="close" aria-label="Close" (click)="resetHypothesisForm()">
       <span aria-hidden="true">&times;</span>
     </button>
   </div>

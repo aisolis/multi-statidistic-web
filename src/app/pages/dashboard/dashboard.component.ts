@@ -26,9 +26,12 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('hypothesisModal', { static: false }) hypothesisModal: any;
   @ViewChild('hypothesisResultModal', { static: false }) hypothesisResultModal: any;
   @ViewChild('chartProjection', { static: false }) chartProjection: ElementRef<HTMLCanvasElement>;
-  @ViewChild(MatPaginator) paginator: MatPaginator;
+  @ViewChild('sales') paginator: MatPaginator;
+  @ViewChild('projectionPaginator') projectionPaginator: MatPaginator;
+
 
   displayedColumns: string[] = ['mes', 'unidadesVendidas', 'ganancias', 'anioVenta'];
+  displayedProjectionColumns: string[] = ['periodo', 'intervalo', 'unidades', 'ganancias'];
 
   public datasets: any;
   public data: any;
@@ -47,7 +50,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   public selectedMonth: string = '';
   public viewMode: string = 'month';
   public availableMonths: string[] = [];
-  public projectionResult: any;
+  public projectionResult: any[] = [];
   private subscription: Subscription;
   public salesForm: FormGroup;
   public monthForm: FormGroup;
@@ -57,7 +60,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   public hypothesisResult: any;
   public hypothesisImageUrl: string;
   dataSource = new MatTableDataSource<any>(this.salesData);
-
+  projectionDataSource = new MatTableDataSource<any>();
 
   constructor(private modalService: NgbModal, private fb: FormBuilder, private ventasService: VentasService, private cdr: ChangeDetectorRef) {
     this.salesForm = this.fb.group({
@@ -99,6 +102,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngAfterViewInit() {
     this.dataSource.paginator = this.paginator;
+    this.cdr.detectChanges(); // Detectar cambios después de asignar los paginadores
     this.initializeCharts();
   }
 
@@ -151,7 +155,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       for (let x = 0; x <= periods; x++) {
         labelsX.push(x.toString());
       }
-      let newGains = [0, ...this.projectionResult.predicciones.map(predict => predict.ganancias)];
+      let newGains = [0, ...this.projectionResult['predicciones'].map(predict => predict.ganancias)];
 
       if (this.projectionChart) {
         this.projectionChart.data.labels = labelsX;
@@ -203,7 +207,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   openProjectionModal() {
-    this.modalService.open(this.projectionModal, { ariaLabelledBy: 'modal-basic-title', windowClass: 'custom-modal custom-modal-medium' });
+    const modalRef = this.modalService.open(this.projectionModal, { ariaLabelledBy: 'modal-basic-title', windowClass: 'custom-modal custom-modal-medium' });
     this.initTemplate();
   }
 
@@ -269,11 +273,59 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       };
       this.subscription = this.ventasService.obtenerProyeccion(projectionData).subscribe(response => {
         this.projectionResult = response;
+        this.projectionDataSource.data = response.predicciones;
+        console.log(this.projectionPaginator);
+        this.projectionDataSource.paginator = this.projectionPaginator;
+        this.cdr.detectChanges(); // Detectar cambios después de asignar los paginadores
         this.initializeProjection();
-      }, error => {
+      }, error => { 
         console.error('Error al obtener proyección:', error);
       });
     }
+  }
+
+
+  resetProjectionModal(){
+    this.resetProjectionForm();
+    this.projectionResult = [];
+    this.projectionDataSource.data = [];
+    this.projectionChart.data.labels = [];
+    this.projectionChart.data.datasets[0].data = [];  
+    this.projectionChart.update();
+    this.modalService.dismissAll();
+  }
+
+  
+  resetSalesForm() {
+    this.salesForm.reset({
+      unidadesVendidas: '',
+      ganancias: '',
+      mes: '',
+      anio: ''
+    });
+    this.modalService.dismissAll();
+  }
+
+  resetHypothesisForm() {
+    this.hypothesisForm.reset({
+      miu: '',
+      media: '',
+      n: '',
+      desvStdType: 'desvStd',
+      desvStdValue: '',
+      tipo: '<',
+      a: ''
+    });
+    this.modalService.dismissAll();
+
+  }
+
+  resetProjectionForm() {
+    this.projectionForm.reset({
+      intervalo: 'meses',
+      periodos: 1
+    });
+    
   }
 
   onHypothesisSubmit() {
