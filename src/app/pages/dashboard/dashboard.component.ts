@@ -250,6 +250,9 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
       this.ventasService.insertarVenta(venta).subscribe(response => {
         console.log(response.message);
+        this.dataSource.data = this.salesData;
+        this.dataSource.paginator = this.paginator;
+        this.obtenerVentasGlobales();
       });
     }
   }
