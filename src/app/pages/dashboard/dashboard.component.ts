@@ -203,7 +203,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   openProjectionModal() {
-    this.modalService.open(this.projectionModal, { ariaLabelledBy: 'modal-basic-title', windowClass: 'custom-modal' });
+    this.modalService.open(this.projectionModal, { ariaLabelledBy: 'modal-basic-title', windowClass: 'custom-modal custom-modal-medium' });
     this.initTemplate();
   }
 
