@@ -12,6 +12,7 @@ import {
 import { Subscription } from 'rxjs';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material/table';
+import { ToastrService } from 'ngx-toastr';
 
 
 @Component({
@@ -62,7 +63,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   dataSource = new MatTableDataSource<any>(this.salesData);
   projectionDataSource = new MatTableDataSource<any>();
 
-  constructor(private modalService: NgbModal, private fb: FormBuilder, private ventasService: VentasService, private cdr: ChangeDetectorRef) {
+  constructor(private modalService: NgbModal, private fb: FormBuilder, private ventasService: VentasService, private cdr: ChangeDetectorRef,private toastr: ToastrService) {
     this.salesForm = this.fb.group({
       unidadesVendidas: ['', [Validators.required, Validators.pattern('^[0-9]+$')]],
       ganancias: ['', [Validators.required, Validators.pattern('^[0-9]+(\\.[0-9]{1,2})?$')]],
@@ -253,6 +254,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         this.dataSource.data = this.salesData;
         this.dataSource.paginator = this.paginator;
         this.obtenerVentasGlobales();
+        this.showSuccess();
       });
     }
   }
@@ -282,6 +284,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         this.cdr.detectChanges(); // Detectar cambios después de asignar los paginadores
         this.initializeProjection();
       }, error => { 
+        this.showError();
         console.error('Error al obtener proyección:', error);
       });
     }
@@ -544,6 +547,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       this.initializeCharts(); // Inicializa los gráficos después de cargar los datos
       this.updateChart();
     }, error => {
+      this.showError();
       console.error('Error al recuperar ventas globales:', error);
     });
   }
@@ -563,5 +567,32 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   openHypothesisResultModal() {
     this.modalService.open(this.hypothesisResultModal, { ariaLabelledBy: 'modal-basic-title', windowClass: 'custom-modal custom-modal-medium' });
   }
+
+  showSuccess() {
+    this.toastr.success('Se actualizo o inserto una venta', 'Listo', {
+      timeOut: 5000,
+      extendedTimeOut: 1000,
+      closeButton: true,
+      progressBar: true,
+      progressAnimation: 'decreasing',
+      positionClass: 'toast-top-right',
+      tapToDismiss: false,
+      newestOnTop: true
+    });
+  }
+
+  showError() {
+    this.toastr.error('Ocurrio un error durante la solicitud', 'Error', {
+      timeOut: 5000,
+      extendedTimeOut: 1000,
+      closeButton: true,
+      progressBar: true,
+      progressAnimation: 'decreasing',
+      positionClass: 'toast-top-right',
+      tapToDismiss: false,
+      newestOnTop: true
+    });
+  }
+
 
 }
