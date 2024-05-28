@@ -1,17 +1,15 @@
 import Chart from 'chart.js';
-//
+
 // Chart extension for making the bars rounded
 // Code from: https://codepen.io/jedtrow/full/ygRYgo
-//
 
 Chart.elements.Rectangle.prototype.draw = function() {
   var ctx = this._chart.ctx;
   var vm = this._view;
-  var left, right, top, bottom, signX, signY, borderSkipped, radius;
+  var left, right, top, bottom, signX, signY, borderSkipped;
   var borderWidth = vm.borderWidth;
-  // Set Radius Here
-  // If radius is large enough to cause drawing errors a max radius is imposed
-  var cornerRadius = 6;
+  var cornerRadius = 6; // Set Radius Here
+  var radius; // Declare radius here
 
   if (!vm.horizontal) {
     // bar
@@ -33,26 +31,18 @@ Chart.elements.Rectangle.prototype.draw = function() {
     borderSkipped = vm.borderSkipped || "left";
   }
 
-  // Canvas doesn't allow us to stroke inside the width so we can
-  // adjust the sizes to fit if we're setting a stroke on the line
   if (borderWidth) {
-    // borderWidth shold be less than bar width and bar height.
     var barSize = Math.min(Math.abs(left - right), Math.abs(top - bottom));
     borderWidth = borderWidth > barSize ? barSize : borderWidth;
     var halfStroke = borderWidth / 2;
-    // Adjust borderWidth when bar top position is near vm.base(zero).
     var borderLeft = left + (borderSkipped !== "left" ? halfStroke * signX : 0);
-    var borderRight =
-      right + (borderSkipped !== "right" ? -halfStroke * signX : 0);
+    var borderRight = right + (borderSkipped !== "right" ? -halfStroke * signX : 0);
     var borderTop = top + (borderSkipped !== "top" ? halfStroke * signY : 0);
-    var borderBottom =
-      bottom + (borderSkipped !== "bottom" ? -halfStroke * signY : 0);
-    // not become a vertical line?
+    var borderBottom = bottom + (borderSkipped !== "bottom" ? -halfStroke * signY : 0);
     if (borderLeft !== borderRight) {
       top = borderTop;
       bottom = borderBottom;
     }
-    // not become a horizontal line?
     if (borderTop !== borderBottom) {
       left = borderLeft;
       right = borderRight;
@@ -64,12 +54,8 @@ Chart.elements.Rectangle.prototype.draw = function() {
   ctx.strokeStyle = vm.borderColor;
   ctx.lineWidth = borderWidth;
 
-  // Corner points, from bottom-left to bottom-right clockwise
-  // | 1 2 |
-  // | 0 3 |
   var corners = [[left, bottom], [left, top], [right, top], [right, bottom]];
 
-  // Find first (starting) corner with fallback to 'bottom'
   var borders = ["bottom", "left", "top", "right"];
   var startCorner = borders.indexOf(borderSkipped, 0);
   if (startCorner === -1) {
@@ -80,7 +66,6 @@ Chart.elements.Rectangle.prototype.draw = function() {
     return corners[(startCorner + index) % 4];
   }
 
-  // Draw rectangle from 'startCorner'
   var corner = cornerAt(0);
   ctx.moveTo(corner[0], corner[1]);
 
@@ -91,16 +76,12 @@ Chart.elements.Rectangle.prototype.draw = function() {
       nextCornerId = 0;
     }
 
-    // let nextCorner = cornerAt(nextCornerId);
-
     let width = corners[2][0] - corners[1][0];
     let height = corners[0][1] - corners[1][1];
     let x = corners[1][0];
     let y = corners[1][1];
-    // eslint-disable-next-line
-    var radius: any = cornerRadius;
+    radius = cornerRadius;
 
-    // Fix radius being too large
     if (radius > height / 2) {
       radius = height / 2;
     }
@@ -125,7 +106,7 @@ Chart.elements.Rectangle.prototype.draw = function() {
   }
 };
 
-var mode = 'light';//(themeMode) ? themeMode : 'light';
+var mode = 'light'; // (themeMode) ? themeMode : 'light';
 var fonts = {
   base: 'Open Sans'
 }
@@ -158,8 +139,6 @@ var colors = {
 };
 
 export function chartOptions() {
-
-  // Options
   var options = {
     defaults: {
       global: {
@@ -205,6 +184,13 @@ export function chartOptions() {
           enabled: true,
           mode: 'index',
           intersect: false,
+          callbacks: {
+            label: function(tooltipItem, data) {
+              var label = data.datasets[tooltipItem.datasetIndex].label || '';
+              var value = tooltipItem.yLabel;
+              return label + ': Q' + value.toLocaleString();
+            }
+          }
         }
       },
       doughnut: {
@@ -228,7 +214,6 @@ export function chartOptions() {
     }
   }
 
-  // yAxes
   Chart.scaleService.updateScaleDefaults('linear', {
     gridLines: {
       borderDash: [2],
@@ -248,13 +233,12 @@ export function chartOptions() {
       padding: 10,
       callback: function(value) {
         if (!(value % 10)) {
-          return value
+          return 'Q' + value.toLocaleString();
         }
       }
     }
   });
 
-  // xAxes
   Chart.scaleService.updateScaleDefaults('category', {
     gridLines: {
       drawBorder: false,
@@ -265,23 +249,22 @@ export function chartOptions() {
       padding: 20
     },
     datasets: [{
-        maxBarThickness: 10
+      maxBarThickness: 10
     }]
   });
 
   return options;
-
 }
 
 export const parseOptions = (parent, options) => {
-		for (var item in options) {
-			if (typeof options[item] !== 'object') {
-				parent[item] = options[item];
-			} else {
-				parseOptions(parent[item], options[item]);
-			}
-		}
-	}
+  for (var item in options) {
+    if (typeof options[item] !== 'object') {
+      parent[item] = options[item];
+    } else {
+      parseOptions(parent[item], options[item]);
+    }
+  }
+}
 
 export const chartExample1 = {
   options: {
@@ -290,23 +273,32 @@ export const chartExample1 = {
         gridLines: {
           color: colors.gray[900],
           zeroLineColor: colors.gray[900],
-          drawOnChartArea: false
+          drawOnChartArea: true
         },
         ticks: {
           callback: function(value) {
             if (!(value % 10)) {
-              return '$' + value + 'k';
+              return 'Q' + value + 'k';
             }
           }
         }
       }]
+    },
+    tooltips: {
+      callbacks: {
+        label: function(tooltipItem, data) {
+          var label = data.datasets[tooltipItem.datasetIndex].label || '';
+          var value = tooltipItem.yLabel;
+          return label + ': Q' + value.toLocaleString();
+        }
+      }
     }
   },
   data: {
-    labels: ['May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+    labels: [],
     datasets: [{
-      label: 'Performance',
-      data: [0, 20, 10, 30, 15, 40, 20, 60, 60]
+      label: 'ganancias x año',
+      data: []
     }]
   }
 }
@@ -319,8 +311,7 @@ export const chartExample2 = {
           ticks: {
             callback: function(value) {
               if (!(value % 10)) {
-                //return '$' + value + 'k'
-                return value;
+                return 'Q' + value;
               }
             }
           }
@@ -336,18 +327,18 @@ export const chartExample2 = {
           if (data.datasets.length > 1) {
             content += label;
           }
-          content += yLabel;
+          content += 'Q' + yLabel.toLocaleString();
           return content;
         }
       }
     }
   },
   data: {
-    labels: ["Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+    labels: [],
     datasets: [
       {
         label: "Sales",
-        data: [25, 20, 30, 22, 17, 29],
+        data: [],
         maxBarThickness: 10
       }
     ]

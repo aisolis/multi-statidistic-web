@@ -2,14 +2,14 @@
   <div class="container-fluid">
     <div class="header-body">
       <!-- Card stats -->
-      <div class="row">
+      <div class="row d-flex justify-content-center">
         <div class="col-xl-3 col-lg-6">
           <div class="card card-stats mb-4 mb-xl-0">
             <div class="card-body">
               <div class="row">
                 <div class="col">
-                  <h5 class="card-title text-uppercase text-muted mb-0">Traffic</h5>
-                  <span class="h2 font-weight-bold mb-0">350,897</span>
+                  <h5 class="card-title text-uppercase text-muted mb-0">Crecimiento de ventas</h5>
+                  <span class="h2 font-weight-bold mb-0">{{salesCount}}</span>
                 </div>
                 <div class="col-auto">
                   <div class="icon icon-shape bg-danger text-white rounded-circle shadow">
@@ -18,8 +18,11 @@
                 </div>
               </div>
               <p class="mt-3 mb-0 text-muted text-sm">
-                <span class="text-success mr-2"><i class="fa fa-arrow-up"></i> 3.48%</span>
-                <span class="text-nowrap">Since last month</span>
+                <span [ngClass]="{'text-success': salesPerecent >= 0, 'text-danger': salesPerecent < 0}" class="mr-2">
+                  <i [ngClass]="{'fa-arrow-up': salesPerecent >= 0, 'fa-arrow-down': salesPerecent < 0}" class="fa"></i>
+                  {{salesPerecent | number:'1.0-2'}}%
+                </span>
+                <span class="text-nowrap">Desde el mes pasado</span>
               </p>
             </div>
           </div>
@@ -29,29 +32,8 @@
             <div class="card-body">
               <div class="row">
                 <div class="col">
-                  <h5 class="card-title text-uppercase text-muted mb-0">New users</h5>
-                  <span class="h2 font-weight-bold mb-0">2,356</span>
-                </div>
-                <div class="col-auto">
-                  <div class="icon icon-shape bg-warning text-white rounded-circle shadow">
-                    <i class="fas fa-chart-pie"></i>
-                  </div>
-                </div>
-              </div>
-              <p class="mt-3 mb-0 text-muted text-sm">
-                <span class="text-danger mr-2"><i class="fas fa-arrow-down"></i> 3.48%</span>
-                <span class="text-nowrap">Since last week</span>
-              </p>
-            </div>
-          </div>
-        </div>
-        <div class="col-xl-3 col-lg-6">
-          <div class="card card-stats mb-4 mb-xl-0">
-            <div class="card-body">
-              <div class="row">
-                <div class="col">
-                  <h5 class="card-title text-uppercase text-muted mb-0">Sales</h5>
-                  <span class="h2 font-weight-bold mb-0">924</span>
+                  <h5 class="card-title text-uppercase text-muted mb-0">Unidades vendidas</h5>
+                  <span class="h2 font-weight-bold mb-0">{{unitCount}}</span>
                 </div>
                 <div class="col-auto">
                   <div class="icon icon-shape bg-yellow text-white rounded-circle shadow">
@@ -60,8 +42,7 @@
                 </div>
               </div>
               <p class="mt-3 mb-0 text-muted text-sm">
-                <span class="text-warning mr-2"><i class="fas fa-arrow-down"></i> 1.10%</span>
-                <span class="text-nowrap">Since yesterday</span>
+                <span class="text-nowrap">Ventas del mes actual</span>
               </p>
             </div>
           </div>
@@ -71,18 +52,21 @@
             <div class="card-body">
               <div class="row">
                 <div class="col">
-                  <h5 class="card-title text-uppercase text-muted mb-0">Performance</h5>
-                  <span class="h2 font-weight-bold mb-0">49,65%</span>
+                  <h5 class="card-title text-uppercase text-muted mb-0">Ganancias del mes</h5>
+                  <span class="h2 font-weight-bold mb-0">{{currentMonthRevenue | currency:'Q'}}</span>
                 </div>
                 <div class="col-auto">
-                  <div class="icon icon-shape bg-info text-white rounded-circle shadow">
-                    <i class="fas fa-percent"></i>
+                  <div class="icon icon-shape bg-success text-white rounded-circle shadow">
+                    <i class="fas fa-dollar-sign"></i>
                   </div>
                 </div>
               </div>
               <p class="mt-3 mb-0 text-muted text-sm">
-                <span class="text-success mr-2"><i class="fas fa-arrow-up"></i> 12%</span>
-                <span class="text-nowrap">Since last month</span>
+                <span [ngClass]="{'text-success': revenuePercent >= 0, 'text-danger': revenuePercent < 0}" class="mr-2">
+                  <i [ngClass]="{'fa-arrow-up': revenuePercent >= 0, 'fa-arrow-down': revenuePercent < 0}"
+                    class="fa"></i> {{revenuePercent | number:'1.0-2'}}%
+                </span>
+                <span class="text-nowrap">Desde el mes pasado</span>
               </p>
             </div>
           </div>
@@ -98,21 +82,33 @@
         <div class="card-header bg-transparent">
           <div class="row align-items-center">
             <div class="col">
-              <h6 class="text-uppercase text-light ls-1 mb-1">Overview</h6>
-              <h2 class="text-white mb-0">Sales value</h2>
+              <h6 class="text-uppercase text-light ls-1 mb-1">Ventas del mes</h6>
+              <h2 class="text-white mb-0">diagrama de ventas</h2>
             </div>
             <div class="col">
               <ul class="nav nav-pills justify-content-end">
-                <li class="nav-item mr-2 mr-md-0" data-toggle="chart" data-target="#chart-sales"  (click)="data=datasets[0];updateOptions()">
-                  <a href="javascript:void(0)" class="nav-link py-2 px-3" [ngClass]="{'active':clicked===true}" data-toggle="tab" (click)="clicked=true;clicked1=false">
-                    <span class="d-none d-md-block">Month</span>
+                <li class="nav-item mr-2 mr-md-0" (click)="setViewMode('month')">
+                  <a href="javascript:void(0)" class="nav-link py-2 px-3" [ngClass]="{'active': viewMode === 'month'}">
+                    <span class="d-none d-md-block">Mes</span>
                     <span class="d-md-none">M</span>
                   </a>
                 </li>
-                <li class="nav-item" data-toggle="chart" data-target="#chart-sales"  (click)="data=datasets[1];updateOptions()">
-                  <a href="javascript:void(0)" class="nav-link py-2 px-3" [ngClass]="{'active':clicked1===true}" data-toggle="tab" (click)="clicked=false;clicked1=true">
-                    <span class="d-none d-md-block">Week</span>
-                    <span class="d-md-none">W</span>
+                <li class="nav-item" (click)="setViewMode('year')">
+                  <a href="javascript:void(0)" class="nav-link py-2 px-3" [ngClass]="{'active': viewMode === 'year'}">
+                    <span class="d-none d-md-block">año</span>
+                    <span class="d-md-none">A</span>
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a href="javascript:void(0)" class="nav-link py-2 px-3" (click)="showGlobalProgress()">
+                    <span class="d-none d-md-block">Avance Global</span>
+                    <span class="d-md-none">G</span>
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a href="javascript:void(0)" class="nav-link py-2 px-3" (click)="resetCharts()">
+                    <span class="d-none d-md-block">Resetear</span>
+                    <span class="d-md-none">R</span>
                   </a>
                 </li>
               </ul>
@@ -133,8 +129,8 @@
         <div class="card-header bg-transparent">
           <div class="row align-items-center">
             <div class="col">
-              <h6 class="text-uppercase text-muted ls-1 mb-1">Performance</h6>
-              <h2 class="mb-0">Total orders</h2>
+              <h6 class="text-uppercase text-muted ls-1 mb-1">unidades x mes</h6>
+              <h2 class="mb-0">Unidades vendidas</h2>
             </div>
           </div>
         </div>
@@ -147,218 +143,29 @@
       </div>
     </div>
   </div>
-  <div class="row mt-5">
-    <div class="col-xl-8 mb-5 mb-xl-0">
+  <!-- Table -->
+  <div class="row mt-3">
+    <div class="col">
       <div class="card shadow">
         <div class="card-header border-0">
-          <div class="row align-items-center">
-            <div class="col">
-              <h3 class="mb-0">Page visits</h3>
-            </div>
-            <div class="col text-right">
-              <a href="#!" class="btn btn-sm btn-primary">See all</a>
-            </div>
-          </div>
+          <h3 class="mb-0">Tabla de Ventas</h3>
         </div>
         <div class="table-responsive">
-          <!-- Projects table -->
           <table class="table align-items-center table-flush">
             <thead class="thead-light">
               <tr>
-                <th scope="col">Page name</th>
-                <th scope="col">Visitors</th>
-                <th scope="col">Unique users</th>
-                <th scope="col">Bounce rate</th>
+                <th scope="col">Mes</th>
+                <th scope="col">Unidades Vendidas</th>
+                <th scope="col">Ganancias</th>
+                <th scope="col">Año de Venta</th>
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <th scope="row">
-                  /argon/
-                </th>
-                <td>
-                  4,569
-                </td>
-                <td>
-                  340
-                </td>
-                <td>
-                  <i class="fas fa-arrow-up text-success mr-3"></i> 46,53%
-                </td>
-              </tr>
-              <tr>
-                <th scope="row">
-                  /argon/index.html
-                </th>
-                <td>
-                  3,985
-                </td>
-                <td>
-                  319
-                </td>
-                <td>
-                  <i class="fas fa-arrow-down text-warning mr-3"></i> 46,53%
-                </td>
-              </tr>
-              <tr>
-                <th scope="row">
-                  /argon/charts.html
-                </th>
-                <td>
-                  3,513
-                </td>
-                <td>
-                  294
-                </td>
-                <td>
-                  <i class="fas fa-arrow-down text-warning mr-3"></i> 36,49%
-                </td>
-              </tr>
-              <tr>
-                <th scope="row">
-                  /argon/tables.html
-                </th>
-                <td>
-                  2,050
-                </td>
-                <td>
-                  147
-                </td>
-                <td>
-                  <i class="fas fa-arrow-up text-success mr-3"></i> 50,87%
-                </td>
-              </tr>
-              <tr>
-                <th scope="row">
-                  /argon/profile.html
-                </th>
-                <td>
-                  1,795
-                </td>
-                <td>
-                  190
-                </td>
-                <td>
-                  <i class="fas fa-arrow-down text-danger mr-3"></i> 46,53%
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-    <div class="col-xl-4">
-      <div class="card shadow">
-        <div class="card-header border-0">
-          <div class="row align-items-center">
-            <div class="col">
-              <h3 class="mb-0">Social traffic</h3>
-            </div>
-            <div class="col text-right">
-              <a href="#!" class="btn btn-sm btn-primary">See all</a>
-            </div>
-          </div>
-        </div>
-        <div class="table-responsive">
-          <!-- Projects table -->
-          <table class="table align-items-center table-flush">
-            <thead class="thead-light">
-              <tr>
-                <th scope="col">Referral</th>
-                <th scope="col">Visitors</th>
-                <th scope="col"></th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <th scope="row">
-                  Facebook
-                </th>
-                <td>
-                  1,480
-                </td>
-                <td>
-                  <div class="d-flex align-items-center">
-                    <span class="mr-2">60%</span>
-                    <div>
-                      <div class="progress">
-                        <div class="progress-bar bg-gradient-danger" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: 60%;"></div>
-                      </div>
-                    </div>
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                <th scope="row">
-                  Facebook
-                </th>
-                <td>
-                  5,480
-                </td>
-                <td>
-                  <div class="d-flex align-items-center">
-                    <span class="mr-2">70%</span>
-                    <div>
-                      <div class="progress">
-                        <div class="progress-bar bg-gradient-success" role="progressbar" aria-valuenow="70" aria-valuemin="0" aria-valuemax="100" style="width: 70%;"></div>
-                      </div>
-                    </div>
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                <th scope="row">
-                  Google
-                </th>
-                <td>
-                  4,807
-                </td>
-                <td>
-                  <div class="d-flex align-items-center">
-                    <span class="mr-2">80%</span>
-                    <div>
-                      <div class="progress">
-                        <div class="progress-bar bg-gradient-primary" role="progressbar" aria-valuenow="80" aria-valuemin="0" aria-valuemax="100" style="width: 80%;"></div>
-                      </div>
-                    </div>
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                <th scope="row">
-                  Instagram
-                </th>
-                <td>
-                  3,678
-                </td>
-                <td>
-                  <div class="d-flex align-items-center">
-                    <span class="mr-2">75%</span>
-                    <div>
-                      <div class="progress">
-                        <div class="progress-bar bg-gradient-info" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" style="width: 75%;"></div>
-                      </div>
-                    </div>
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                <th scope="row">
-                  twitter
-                </th>
-                <td>
-                  2,645
-                </td>
-                <td>
-                  <div class="d-flex align-items-center">
-                    <span class="mr-2">30%</span>
-                    <div>
-                      <div class="progress">
-                        <div class="progress-bar bg-gradient-warning" role="progressbar" aria-valuenow="30" aria-valuemin="0" aria-valuemax="100" style="width: 30%;"></div>
-                      </div>
-                    </div>
-                  </div>
-                </td>
+              <tr *ngFor="let sale of salesData">
+                <td>{{ sale.mes }}</td>
+                <td>{{ sale.unidadesVendidas }}</td>
+                <td>{{ sale.ganancias | currency:'Q' }}</td>
+                <td>{{ sale.anioVenta }}</td>
               </tr>
             </tbody>
           </table>
@@ -366,4 +173,356 @@
       </div>
     </div>
   </div>
+
+  <!-- Botón fijo con el ícono de "+" -->
+  <button class="btn btn-primary btn-circle btn-lg fixed-bottom-right" (click)="openModal()">
+    <i class="fas fa-plus"></i>
+  </button>
+
+  <!-- Button to open the projection modal -->
+  <button class="btn btn-primary btn-circle btn-lg fixed-bottom-right-projection" (click)="openProjectionModal()">
+    <i class="fas fa-chart-line"></i>
+  </button>
+
+  <!-- Botón fijo para la prueba de hipótesis -->
+  <button class="btn btn-primary btn-circle btn-lg fixed-bottom-right-hypothesis" (click)="openHypothesisModal()">
+    <i class="fas fa-vial"></i>
+  </button>
+
+
+  <!-- Modal -->
+  <ng-template #content let-modal>
+    <div class="modal-header">
+      <h4 class="modal-title">Agregar Venta</h4>
+      <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div class="modal-body">
+      <!-- Formulario dentro del modal -->
+      <form [formGroup]="salesForm" (ngSubmit)="onSubmit()">
+        <div class="form-group">
+          <mat-form-field appearance="fill" class="w-100">
+            <mat-label>Unidades Vendidas</mat-label>
+            <input matInput type="number" formControlName="unidadesVendidas">
+            <mat-error *ngIf="salesForm.get('unidadesVendidas')?.hasError('required')">
+              Unidades Vendidas es requerido
+            </mat-error>
+            <mat-error *ngIf="salesForm.get('unidadesVendidas')?.hasError('pattern')">
+              Solo se permiten números enteros positivos
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="form-group">
+          <mat-form-field appearance="fill" class="w-100">
+            <mat-label>Ganancias</mat-label>
+            <input matInput type="number" formControlName="ganancias" step="0.01">
+            <mat-error *ngIf="salesForm.get('ganancias')?.hasError('required')">
+              Ganancias es requerido
+            </mat-error>
+            <mat-error *ngIf="salesForm.get('ganancias')?.hasError('pattern')">
+              Solo se permiten números positivos
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="form-group">
+          <mat-form-field appearance="fill" class="w-100">
+            <mat-label>Mes de Venta</mat-label>
+            <select matNativeControl formControlName="mes">
+              <option value="">Seleccione un mes</option>
+              <option
+                *ngFor="let month of ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']"
+                [value]="month">{{ month }}</option>
+            </select>
+            <mat-error *ngIf="salesForm.get('mes')?.hasError('required')">
+              Mes de Venta es requerido
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="form-group">
+          <mat-form-field appearance="fill" class="w-100">
+            <mat-label>Año de Venta</mat-label>
+            <input matInput type="number" formControlName="anio" min="2000" max="2099">
+            <mat-error *ngIf="salesForm.get('anio')?.hasError('required')">
+              Año de Venta es requerido
+            </mat-error>
+            <mat-error *ngIf="salesForm.get('anio')?.hasError('pattern')">
+              Ingrese un año válido
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="modal-footer">
+          <button type="button" mat-button (click)="modal.dismiss('Cross click')">Cancelar</button>
+          <button type="submit" mat-button [disabled]="!salesForm.valid">Aceptar</button>
+        </div>
+      </form>
+    </div>
+  </ng-template>
+
+  <!-- Modal para seleccionar el mes -->
+  <ng-template #monthModal let-modal>
+    <div class="modal-header">
+      <h4 class="modal-title">Seleccionar Mes</h4>
+      <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div class="modal-body">
+      <form [formGroup]="monthForm" (ngSubmit)="onMonthSubmit()">
+        <div class="form-group">
+          <label for="mes">Seleccione el mes</label>
+          <select id="mes" formControlName="mes" class="form-control">
+            <option value="">Seleccione un mes</option>
+            <option *ngFor="let month of availableMonths" [value]="month">{{ month }}</option>
+          </select>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-light" (click)="modal.dismiss('Cross click')">Cancelar</button>
+          <button type="submit" class="btn btn-primary" [disabled]="!monthForm.valid">Aceptar</button>
+        </div>
+      </form>
+    </div>
+  </ng-template>
+
+
+  <!-- Projection Modal -->
+  <ng-template #projectionModal let-modal>
+    <div class="modal-header">
+      <h4 class="modal-title">Proyecciones de Ventas</h4>
+      <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div class="modal-body">
+      <form [formGroup]="projectionForm" (ngSubmit)="onProjectionSubmit()">
+        <div class="form-group">
+          <label for="intervalo">Intervalo</label>
+          <select id="intervalo" formControlName="intervalo" class="form-control">
+            <option value="años">Años</option>
+            <option value="meses">Meses</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="periodos">Número de Periodos</label>
+          <input type="number" id="periodos" formControlName="periodos" class="form-control" min="1">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-light" (click)="modal.dismiss('Cross click')">Cancelar</button>
+          <button type="submit" class="btn btn-primary" [disabled]="!projectionForm.valid">Aceptar</button>
+        </div>
+      </form>
+      <div class="chart bg-gradient-default">
+        <div class="col">
+          <h6 class="text-uppercase text-light ls-1 mb-1">diagrama de ventas</h6>
+          <h2 class="text-white mb-0">Proyecciones</h2>
+        </div>
+        <canvas id="chart-projection" class="chart-canvas" #chartProjection></canvas>
+      </div>
+      <div *ngIf="projectionResult" class="mt-5">
+        <!-- Chart -->
+        <h5>Factor de Crecimiento: {{ projectionResult.factor_crecimiento }}</h5>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Periodo</th>
+              <th>Intervalo</th>
+              <th>Unidades</th>
+              <th>Ganancias</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let pred of projectionResult.predicciones">
+              <td>{{ pred.periodo }}</td>
+              <td>{{ pred.intervalo }}</td>
+              <td>{{ pred.unidades | number:'1.0-0'}}</td>
+              <td>{{ pred.ganancias | currency:'GTQ' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </ng-template>
+
+
+  <!-- Hypothesis Test Modal -->
+  <ng-template #hypothesisModal let-modal>
+    <div class="modal-header">
+      <h4 class="modal-title">Prueba de Hipótesis</h4>
+      <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div class="modal-body">
+      <form [formGroup]="hypothesisForm" (ngSubmit)="onHypothesisSubmit()">
+        <div class="form-group">
+          <mat-form-field appearance="fill" class="w-100">
+            <mat-label>miu</mat-label>
+            <input matInput type="number" formControlName="miu" min="0">
+            <mat-error *ngIf="hypothesisForm.get('miu')?.hasError('required')">
+              miu es requerido
+            </mat-error>
+            <mat-error *ngIf="hypothesisForm.get('miu')?.hasError('pattern')">
+              Solo se permiten números positivos
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="form-group">
+          <mat-form-field appearance="fill" class="w-100">
+            <mat-label>Media</mat-label>
+            <input matInput type="number" formControlName="media" min="0">
+            <mat-error *ngIf="hypothesisForm.get('media')?.hasError('required')">
+              Media es requerida
+            </mat-error>
+            <mat-error *ngIf="hypothesisForm.get('media')?.hasError('pattern')">
+              Solo se permiten números positivos
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="form-group">
+          <mat-form-field appearance="fill" class="w-100">
+            <mat-label>N</mat-label>
+            <input matInput type="number" formControlName="n" min="0">
+            <mat-error *ngIf="hypothesisForm.get('n')?.hasError('required')">
+              N es requerido
+            </mat-error>
+            <mat-error *ngIf="hypothesisForm.get('n')?.hasError('pattern')">
+              Solo se permiten números positivos
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="form-group">
+          <mat-form-field appearance="fill" class="w-100">
+            <mat-label>Desviación Estándar / Varianza</mat-label>
+            <mat-select formControlName="desvStdType">
+              <mat-option value="desvStd">Desviación Estándar</mat-option>
+              <mat-option value="varianza">Varianza</mat-option>
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field appearance="fill" class="w-100">
+            <mat-label>Valor</mat-label>
+            <input matInput type="number" formControlName="desvStdValue" min="0">
+            <mat-error *ngIf="hypothesisForm.get('desvStdValue')?.hasError('required')">
+              Valor es requerido
+            </mat-error>
+            <mat-error *ngIf="hypothesisForm.get('desvStdValue')?.hasError('pattern')">
+              Solo se permiten números positivos
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="form-group">
+          <mat-form-field appearance="fill" class="w-100">
+            <mat-label>Tipo</mat-label>
+            <mat-select formControlName="tipo">
+              <mat-option value="<">&lt;</mat-option>
+              <mat-option value=">">&gt;</mat-option>
+              <mat-option value="=">=</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+        <div class="form-group">
+          <mat-form-field appearance="fill" class="w-100">
+            <mat-label>Significancia</mat-label>
+            <input matInput type="number" formControlName="a" step="0.01" min="0" max="1">
+            <mat-error *ngIf="hypothesisForm.get('a')?.hasError('required')">
+              Alfa es requerido
+            </mat-error>
+            <mat-error *ngIf="hypothesisForm.get('a')?.hasError('pattern')">
+              Solo se permiten valores entre 0 y 1
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="modal-footer">
+          <button type="button" mat-button (click)="modal.dismiss('Cross click')">Cancelar</button>
+          <button type="submit" mat-button [disabled]="!hypothesisForm.valid">Aceptar</button>
+        </div>
+      </form>
+    </div>
+  </ng-template>
+
+<!-- Hypothesis Result Modal -->
+<ng-template #hypothesisResultModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title">Resultado de la Prueba de Hipótesis</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <div class="chart-container">
+      <img [src]="hypothesisImageUrl" alt="Hypothesis Test Result Chart" class="img-fluid"/>
+    </div>
+    <div *ngIf="hypothesisResult" class="tables-container">
+      <div class="table-wrapper">
+        <table class="table">
+          <thead>
+            <tr>
+              <th colspan="2">Datos de la Prueba</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Variable de interés</td>
+              <td>{{ hypothesisResult.data['1'] }}</td>
+            </tr>
+            <tr>
+              <td>Hipótesis nula H0</td>
+              <td>{{ hypothesisResult.data['2'] }}</td>
+            </tr>
+            <tr>
+              <td>Hipótesis alternativa H1</td>
+              <td>{{ hypothesisResult.data['3'] }}</td>
+            </tr>
+            <tr>
+              <td>Significancia</td>
+              <td>{{ hypothesisResult.data['4'] }}</td>
+            </tr>
+            <tr>
+              <td>Estadístico de prueba Z_0</td>
+              <td>{{ hypothesisResult.data['5'] }}</td>
+            </tr>
+            <tr>
+              <td>Condición de rechazo</td>
+              <td>{{ hypothesisResult.data['6'] }}</td>
+            </tr>
+            <tr>
+              <td>Decisión</td>
+              <td>{{ hypothesisResult.data['7'] }}</td>
+            </tr>
+            <tr>
+              <td>Distribución usada</td>
+              <td>{{ hypothesisResult.data['8'] }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="table-wrapper">
+        <table class="table">
+          <thead>
+            <tr>
+              <th colspan="2">Extras</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Estadístico de prueba Z_0</td>
+              <td>{{ hypothesisResult.extras['Estadístico_de_prueba_Z_0'] }}</td>
+            </tr>
+            <tr>
+              <td>Valor p</td>
+              <td>{{ hypothesisResult.extras['p_value'] }}</td>
+            </tr>
+            <tr>
+              <td>Tipo de cola</td>
+              <td>{{ hypothesisResult.extras['tipo_de_cola'] }}</td>
+            </tr>
+            <tr>
+              <td>Valor crítico</td>
+              <td>{{ hypothesisResult.extras['valor_critico'] }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</ng-template>
 </div>

@@ -1,1 +1,20 @@
 /* You can add global styles to this file, and also import other style files */
+
+.custom-modal{
+    z-index: 1060 !important;
+  }
+  
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+.cdk-global-overlay-wrapper, .cdk-overlay-container {
+  z-index: 99999 !important;
+}
+
+.custom-modal-medium .modal-dialog {
+  max-width: 1200px !important; /* Ajusta este valor según tus necesidades */
+}
+
+.main-content{
+  margin-left: 0px !important;
+}
